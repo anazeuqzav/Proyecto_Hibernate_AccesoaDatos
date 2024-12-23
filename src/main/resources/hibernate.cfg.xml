@@ -1,0 +1,33 @@
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+
+    <session-factory>
+        <!-- Configuración de conexión -->
+        <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/taller_mecanico</property>
+        <property name="hibernate.connection.username">root</property>
+        <property name="hibernate.connection.password">root</property>
+
+        <!-- Dialecto de la base de datos -->
+
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQL57Dialect</property>
+        <property name="hibernate.dialect.storage_engine">innodb</property>
+
+        <!-- Configuración adicional -->
+        <property name="hibernate.hbm2ddl.auto">update</property>
+        <property name="hibernate.show_sql">true</property>
+        <property name="hibernate.format_sql">true</property>
+
+        <!-- Annotated classes -->
+        <mapping class="org.model.Empleado"/>
+        <mapping class="org.model.Cliente"/>
+        <mapping class="org.model.Coche"/>
+        <mapping class="org.model.Reparacion"/>
+        <mapping class="org.model.Usuario"/>
+        <mapping class="org.model.Venta"/>
+
+
+    </session-factory>
+</hibernate-configuration>
