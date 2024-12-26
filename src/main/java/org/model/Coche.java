@@ -109,4 +109,15 @@ public class Coche {
     public void setClientes(List<Cliente> clientes) {
         this.clientes = clientes;
     }
+
+    @Override
+    public String toString() {
+        return "---------------------------------------------\n" +
+                "Coche: " + "\n" +
+                "ID:              " + id + "\n" +
+                "Marca:           " + marca + "\n" +
+                "Modelo:          " + modelo + "\n" +
+                "Año:             " + anio + "\n" +
+                "Precio:          " + precio + "\n";
+    }
 }

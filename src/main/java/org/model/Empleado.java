@@ -99,4 +99,18 @@ public class Empleado {
     public void setVentas(List<Venta> ventas) {
         this.ventas = ventas;
     }
+
+    @Override
+    public String toString() {
+        return "---------------------------------------------\n" +
+                "Empleado: " + "\n" +
+                "ID:              " + id + "\n" +
+                "Nombre:          " + nombre + "\n" +
+                "Puesto:          " + puesto + "\n" +
+                "Salario:         " + salario + "\n" +
+                "Usuario:         " + usuario + "\n" +
+                "Reparaiones:     " + reparaciones + "\n" +
+                "Ventas:          " + ventas + "\n";
+    }
 }
+

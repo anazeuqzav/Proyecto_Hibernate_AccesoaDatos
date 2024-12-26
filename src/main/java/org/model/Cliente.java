@@ -83,4 +83,17 @@ public class Cliente {
     public void setCoches(List<Coche> coches) {
         this.coches = coches;
     }
+
+    @Override
+    public String toString() {
+        return "---------------------------------------------\n" +
+                "Cliente: " + "\n" +
+                "ID:              " + id + "\n" +
+                "Nombre:          " + nombre + "\n" +
+                "Email:           " + email + "\n" +
+                "Teléfono:        " + telefono + "\n" +
+                "Coches:          " + coches + "\n" +
+                "Ventas:          " + ventas + "\n";
+
+    }
 }
