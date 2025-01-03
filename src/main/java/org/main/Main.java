@@ -1,18 +1,15 @@
 package org.main;
 
-import org.model.Cliente;
-import org.model.Coche;
-import org.model.Empleado;
-import org.model.Usuario;
+import org.model.*;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Scanner;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("miUnidadDePersistencia");
@@ -505,7 +502,7 @@ public class Main {
                                 }
                                 break;
 
-                            // Eliminar un empleado
+                            // Eliminar un coche
                             case "5":
                                 System.out.println("Introduce el ID del coche a eliminar:");
                                 int idEliminar = sc.nextInt();
@@ -538,21 +535,177 @@ public class Main {
 
                 // Reparacion
                 case "5":
-                    mostrarMenuOperaciones("Usuario");
-                    opcion = sc.nextLine();
-                    switch (opcion) {
-                        case "1":
-                            break;
+                    do {
+                        mostrarMenuOperaciones("Reparacion");
+                        opcion = sc.nextLine();
+                        switch (opcion) {
+                            // Crear Reparacion
+                            case "1":
+                                System.out.println("Introduce una breve descripción");
+                                String descripcion = sc.nextLine();
+                                try {
+                                    System.out.println("Introduce la fecha de la reparación (aaaa-mm-dd):");
+                                    LocalDate fechaReparacion = LocalDate.parse(sc.nextLine());
+                                    System.out.println("Introduce el costo de la reparación ");
+                                    int costo = sc.nextInt();
 
-                        case "2":
-                            break;
+                                    // Buscar coche reparado
+                                    System.out.println("Introduce el ID del coche reparado");
+                                    int idCoche = sc.nextInt();
+                                    Coche cocheReparado = em.find(Coche.class, idCoche);
 
-                        case "3":
-                            break;
+                                    // Buscar empleado encargado de la reparacion
+                                    System.out.println("Introduce el ID del empleado encargado de la reparación: ");
+                                    int idEmpleado = sc.nextInt();
+                                    Empleado empleadoReparacion = em.find(Empleado.class, idEmpleado);
 
-                        case "4":
-                            break;
-                    }
+                                    if (cocheReparado != null && empleadoReparacion != null) {
+                                        Reparacion reparacion = new Reparacion(descripcion, fechaReparacion, costo);
+
+                                        cocheReparado.getReparaciones().add(reparacion);
+                                        empleadoReparacion.getReparaciones().add(reparacion);
+                                        try {
+                                            em.getTransaction().begin();
+                                            em.persist(reparacion);
+                                            em.persist(cocheReparado);
+                                            em.persist(empleadoReparacion);
+                                            em.getTransaction().commit();
+                                            System.out.println("Reparacion creado con éxito");
+                                        } catch (Exception e) {
+                                            em.getTransaction().rollback();
+                                            System.err.println("Error al persistir la entidad: " + e.getMessage());
+                                        }
+                                    } else {
+                                        System.err.println("\nCoche o empleado no encontrado.");
+
+                                    }
+                                } catch (DateTimeParseException e ){
+                                    System.err.println("Formato de fecha no válido");
+                                }
+                                break;
+
+                            // Buscar la Reparación por ID
+                            case "2":
+                                System.out.println("Introduce el ID del reparación: ");
+                                int idReparacion = sc.nextInt();
+                                sc.nextLine();
+
+                                Reparacion reparacionEncontrada = em.find(Reparacion.class, idReparacion);
+                                if (reparacionEncontrada != null) {
+                                    System.out.println(reparacionEncontrada);
+                                } else {
+                                    System.err.println("\nReparacion no encontrada.");
+                                }
+                                break;
+
+                            // Listar todas las Reparaciones
+                            case "3":
+                                List<Reparacion> reparaciones = em.createQuery("SELECT r FROM Reparacion r", Reparacion.class).getResultList();
+                                System.out.println(reparaciones);
+                                break;
+
+                            // Actualizar una Reparacion
+                            case "4":
+                                System.out.println("Introduce el ID de la reparación a actualizar: ");
+                                int idActualizar = sc.nextInt();
+
+                                Reparacion reparacionActualizar = em.find(Reparacion.class, idActualizar);
+
+                                if (reparacionActualizar != null){
+                                    System.out.println("Introduce la nueva descripcion: ");
+                                    String descripcionNueva = sc.nextLine();
+
+                                    try{
+                                        System.out.println("Introduce la nueva fecha (aaaa-mm-dd): ");
+                                        LocalDate fechaNueva = LocalDate.parse(sc.nextLine());
+                                        System.out.println("Introduce el nuevo costo: ");
+                                        double costoNuevo = sc.nextInt();
+
+                                        // Buscar el nuevo empleado y eliminar el viejo
+                                        System.out.println("Introduce el ID del nuevo empleado: ");
+                                        int idEmpleado = sc.nextInt();
+
+                                        Empleado empleadoActualizar = em.find(Empleado.class, idEmpleado);
+
+                                        if (empleadoActualizar != null) {
+                                            // Elimina la reparacion de la lista de reparaciones del empleado viejo
+                                            Empleado empleadoViejo = reparacionActualizar.getEmpleado();
+                                            empleadoViejo.getReparaciones().remove(reparacionActualizar);
+
+                                            reparacionActualizar.setEmpleado(empleadoActualizar);
+                                        } else {
+                                            System.err.println("No se ha encontrado el empleado. Se ha dejado el empleado anterior");
+                                        }
+
+                                        // Buscar el nuevo coche
+                                        System.out.println("Introduce el ID del nuevo coche: ");
+                                        int idCoche = sc.nextInt();
+
+                                        Coche cocheActualizar = em.find(Coche.class, idCoche);
+
+                                        if (cocheActualizar != null) {
+                                            // Elimina la reparacion de la lista de reparaciones del coche viejo
+                                            Coche cocheViejo = reparacionActualizar.getCoche();
+                                            cocheViejo.getReparaciones().remove(reparacionActualizar);
+
+                                            reparacionActualizar.setCoche(cocheActualizar);
+                                        } else {
+                                            System.err.println("No se ha encontrado el coche. Se ha dejado el coche anterior");
+                                        }
+
+                                        reparacionActualizar.setDescripcion(descripcionNueva);
+                                        reparacionActualizar.setFecha(fechaNueva);
+                                        reparacionActualizar.setCosto(costoNuevo);
+
+                                        try {
+                                            em.getTransaction().begin();
+                                            em.persist(cocheActualizar);
+                                            em.persist(empleadoActualizar);
+                                            em.persist(reparacionActualizar);
+                                            em.getTransaction().commit();
+                                            System.out.println("Reparacion actualizada con éxito");
+                                        } catch (Exception e) {
+                                            em.getTransaction().rollback();
+                                            System.err.println("Error al persistir la entidad: " + e.getMessage());
+                                        }
+                                    } catch (DateTimeParseException e){
+                                        System.err.println("Formato de fecha no válido");
+                                    }
+
+                                } else {
+                                    System.err.println("\n Coche no encontrado.");
+                                }
+                                break;
+
+                            // Eliminar un reparacion
+                            case "5":
+                                System.out.println("Introduce el ID de la reparación a eliminar:");
+                                int idEliminar = sc.nextInt();
+                                sc.nextLine();
+
+                                try {
+                                    em.getTransaction().begin();
+                                    Reparacion reparacionEliminar = em.find(Reparacion.class, idEliminar);
+                                    if (reparacionEliminar != null) {
+                                        em.remove(reparacionEliminar);
+                                        em.getTransaction().commit();
+                                        System.out.println("\nReparación eliminada con éxito");
+                                    } else {
+                                        System.err.println("\nReparacion no encontrada.");
+                                        em.getTransaction().rollback();
+                                    }
+                                } catch (Exception e) {
+                                    em.getTransaction().rollback();
+                                    System.err.println("Error al eliminar la entidad: " + e.getMessage());
+                                }
+                                break;
+
+                            case "6":
+                                System.out.println("Saliendo al menu principal...");
+                                break;
+                        }
+
+                    } while (!opcion.equals("6"));
                     break;
                 // Venta
                 case "6":
@@ -598,8 +751,8 @@ public class Main {
                 ║  3. Cliente.                                        ║
                 ║  4. Coche.                                          ║
                 ║  5. Reparación.                                     ║
-                ║  6 Venta                                            ║
-                ║  7 Salir                                            ║
+                ║  6. Venta                                            ║
+                ║  7. Salir                                            ║
                 ╚═════════════════════════════════════════════════════╝
                 """);
     }
@@ -613,9 +766,9 @@ public class Main {
                 ║  1. Crear un registro                                ║
                 ║  2. Buscar por id                                    ║
                 ║  3. Mostrar todos los registros                      ║
-                ║   5. Actualizar un registro                          ║
-                ║  4. Eliminar un registro                             ║
-                ║  5. Salir al menú principal                          ║
+                ║  4. Actualizar un registro                           ║
+                ║  5. Eliminar un registro                             ║
+                ║  6. Salir al menú principal                          ║
                 ╚══════════════════════════════════════════════════════╝
                 """, entidad.toUpperCase()));
 

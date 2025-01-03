@@ -32,6 +32,13 @@ public class Reparacion {
     public Reparacion() {
     }
 
+    // Constructor sin objetos ni id
+    public Reparacion(String descripcion, LocalDate fecha, double costo) {
+        this.descripcion = descripcion;
+        this.fecha = fecha;
+        this.costo = costo;
+    }
+
     // Constructor sin ID
     public Reparacion(String descripcion, LocalDate fecha, double costo, Coche coche, Empleado empleado) {
         this.descripcion = descripcion;
@@ -88,5 +95,10 @@ public class Reparacion {
 
     public void setEmpleado(Empleado empleado) {
         this.empleado = empleado;
+    }
+
+    @Override
+    public String toString() {
+        return "\n • ID: " + id + " | Descripcion: " + descripcion + " | Fecha: " + fecha + " | ID Coche: " + coche.getId() + " | ID Empleado: " + empleado.getId();
     }
 }
