@@ -99,6 +99,6 @@ public class Reparacion {
 
     @Override
     public String toString() {
-        return "\n • ID: " + id + " | Descripcion: " + descripcion + " | Fecha: " + fecha + " | ID Coche: " + coche.getId() + " | ID Empleado: " + empleado.getId();
+        return "\n • ID: " + id + " | Descripcion: " + descripcion + " | Fecha: " + fecha + " | Costo: " + costo + " | ID Coche: " + coche.getId() + " | ID Empleado: " + empleado.getId();
     }
 }

@@ -84,6 +84,14 @@ public class Cliente {
         this.coches = coches;
     }
 
+    public List<Venta> getVentas() {
+        return ventas;
+    }
+
+    public void setVentas(List<Venta> ventas) {
+        this.ventas = ventas;
+    }
+
     @Override
     public String toString() {
         return "---------------------------------------------\n" +
