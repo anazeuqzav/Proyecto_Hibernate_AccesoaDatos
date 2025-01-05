@@ -102,14 +102,14 @@ public class Empleado {
 
     @Override
     public String toString() {
-        return "---------------------------------------------\n" +
-                "Empleado: " + "\n" +
+        return "-----------------------------------------------------------------------------------------------------------------------------------\n" +
+                "EMPLEADO: " + "\n" +
                 "ID:              " + id + "\n" +
                 "Nombre:          " + nombre + "\n" +
                 "Puesto:          " + puesto + "\n" +
                 "Salario:         " + salario + "\n" +
                 "Usuario:         " + usuario + "\n" +
-                "Reparaiones:     " + reparaciones + "\n" +
+                "Reparaciones:     " + reparaciones + "\n" +
                 "Ventas:          " + ventas + "\n";
     }
 }

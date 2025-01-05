@@ -94,4 +94,25 @@ public class Venta {
     public void setCoches(List<Coche> coches) {
         this.coches = coches;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb
+                .append("\n• VENTA ")
+                .append("\n | ID: ").append(id)
+                .append(" | Fecha: ").append(fecha)
+                .append(" | Monto: ").append(monto)
+                .append(" | ID Empleado: ").append(empleado.getId())
+                .append(" | ID Cliente: ").append(cliente.getId())
+                .append("\n Coches en la venta:");
+                for (Coche c : coches) {
+                sb.append("\n   - ID Coche: ").append(c.getId())
+                        .append(" | Modelo: ").append(c.getModelo())
+                        .append(" | Marca: ").append(c.getMarca())
+                        .append("\n");
+            }
+
+        return sb.toString();
+    }
 }

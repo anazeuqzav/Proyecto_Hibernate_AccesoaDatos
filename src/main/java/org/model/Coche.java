@@ -112,12 +112,16 @@ public class Coche {
 
     @Override
     public String toString() {
-        return "---------------------------------------------\n" +
-                "Coche: " + "\n" +
-                "ID:              " + id + "\n" +
-                "Marca:           " + marca + "\n" +
-                "Modelo:          " + modelo + "\n" +
-                "Año:             " + anio + "\n" +
-                "Precio:          " + precio + "\n";
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n• COCHE ")
+                .append("\n | ID: ").append(id)
+                .append(" | Marca: ").append(marca)
+                .append(" | Modelo: ").append(modelo)
+                .append(" | Año: ").append(anio)
+                .append(" | Precio: ").append(precio)
+                .append("\n | Reparaciones: ").append(reparaciones)
+                .append("\n");
+
+        return sb.toString();
     }
 }

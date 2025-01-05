@@ -25,7 +25,7 @@ public class Main {
             opcion = sc.nextLine();
 
             switch (opcion) {
-                // Cliente
+                // Usuario
                 case "1":
                     do {
                         mostrarMenuOperaciones("Usuario");
@@ -80,6 +80,7 @@ public class Main {
                                 try {
                                     System.out.print("Introduce el ID del usuario a actualizar: ");
                                     int idActualizar = sc.nextInt();
+                                    sc.nextLine();
 
                                     Usuario usuarioActualizar = em.find(Usuario.class, idActualizar);
 
@@ -108,6 +109,7 @@ public class Main {
                                     }
                                 } catch (InputMismatchException e){
                                     System.err.println("Error en la introducción de datos.");
+                                    sc.nextLine();
                                 }
                                 break;
 
@@ -136,6 +138,7 @@ public class Main {
 
                                 } catch (InputMismatchException e){
                                     System.err.println("Error en la introducción de datos.");
+                                    sc.nextLine();
                                 }
                                 break;
 
@@ -193,6 +196,7 @@ public class Main {
 
                                 } catch (InputMismatchException e){
                                     System.err.println("Error en la introducción de datos.");
+                                    sc.nextLine();
                                 }
                                 break;
 
@@ -211,6 +215,7 @@ public class Main {
                                     }
                                 } catch (InputMismatchException e){
                                     System.err.println("Error en la introducción de datos.");
+                                    sc.nextLine();
                                 }
                                 break;
 
@@ -273,6 +278,7 @@ public class Main {
                                     }
                                 } catch (InputMismatchException e){
                                     System.err.println("Error en la introducción de datos.");
+                                    sc.nextLine();
                                 }
                                 break;
 
@@ -301,6 +307,7 @@ public class Main {
 
                                 } catch (InputMismatchException e){
                                     System.err.println("Error en la introducción de datos.");
+                                    sc.nextLine();
                                 }
                                 break;
 
@@ -376,6 +383,7 @@ public class Main {
 
                                 } catch (InputMismatchException e){
                                     System.err.println("Error en la introducción de datos.");
+                                    sc.nextLine();
                                 }
                                 break;
 
@@ -390,6 +398,7 @@ public class Main {
                                 try{
                                     System.out.print("Introduce el ID del cliente a actualizar: ");
                                     int idActualizar = sc.nextInt();
+                                    sc.nextLine();
 
                                     Cliente clienteActualizar = em.find(Cliente.class, idActualizar);
 
@@ -437,6 +446,7 @@ public class Main {
 
                                 } catch (InputMismatchException e){
                                     System.err.println("Error en la introducción de datos.");
+                                    sc.nextLine();
                                 }
                                 break;
 
@@ -465,6 +475,7 @@ public class Main {
 
                                 } catch (InputMismatchException e){
                                     System.err.println("Error en la introducción de datos.");
+                                    sc.nextLine();
                                 }
                                 break;
 
@@ -500,6 +511,7 @@ public class Main {
 
                                     System.out.print("Introduce el ID del cliente: ");
                                     int idCliente = sc.nextInt();
+                                    sc.nextLine();
 
                                     Cliente clienteEncontrado = em.find(Cliente.class, idCliente);
 
@@ -522,7 +534,6 @@ public class Main {
 
                                     } else {
                                         System.err.println("\nCliente no encontrado.");
-
                                     }
                                 } catch (InputMismatchException e){
                                     System.err.println("Error en la introducción de datos.");
@@ -544,6 +555,7 @@ public class Main {
                                     }
                                 } catch (InputMismatchException e){
                                     System.err.println("Error en la introducción de datos.");
+                                    sc.nextLine();
                                 }
                                 break;
 
@@ -557,6 +569,7 @@ public class Main {
                                 try {
                                     System.out.print("Introduce el ID del coche a actualizar: ");
                                     int idActualizar = sc.nextInt();
+                                    sc.nextLine();
 
                                     Coche cocheActualizar = em.find(Coche.class, idActualizar);
 
@@ -569,6 +582,7 @@ public class Main {
                                         int anioNuevo = sc.nextInt();
                                         System.out.print("Introduce el nuevo precio: ");
                                         double precioNuevo = sc.nextDouble();
+                                        sc.nextLine();
 
                                         cocheActualizar.setMarca(marcaNuevo);
                                         cocheActualizar.setModelo(modeloNuevo);
@@ -590,6 +604,7 @@ public class Main {
                                     }
                                 } catch (InputMismatchException e){
                                     System.err.println("Error en la introducción de datos.");
+                                    sc.nextLine();
                                 }
                                 break;
 
@@ -599,10 +614,21 @@ public class Main {
                                     System.out.print("Introduce el ID del coche a eliminar: ");
                                     int idEliminar = sc.nextInt();
                                     sc.nextLine();
+
                                     try {
                                         em.getTransaction().begin();
                                         Coche cocheEliminar = em.find(Coche.class, idEliminar);
                                         if (cocheEliminar != null) {
+
+                                            // Para cada cliente de coche que queremos eliminar se borra el coche.
+                                            List<Cliente> clientesEliminar = cocheEliminar.getClientes();
+                                            for(Cliente c:clientesEliminar){
+                                                c.getCoches().remove(cocheEliminar);
+                                                em.persist(c);
+                                            }
+                                            cocheEliminar.getClientes().clear();
+                                            em.persist(cocheEliminar);
+
                                             em.remove(cocheEliminar);
                                             em.getTransaction().commit();
                                             System.out.println("\nCoche eliminado con éxito");
@@ -616,6 +642,7 @@ public class Main {
                                     }
                                 } catch (InputMismatchException e){
                                     System.err.println("Error en la introducción de datos.");
+                                    sc.nextLine();
                                 }
                                 break;
 
@@ -641,6 +668,7 @@ public class Main {
                             case "1":
                                 System.out.print("Introduce una breve descripción: ");
                                 String descripcion = sc.nextLine();
+
                                 try {
                                     System.out.print("Introduce la fecha de la reparación (aaaa-mm-dd): ");
                                     LocalDate fechaReparacion = LocalDate.parse(sc.nextLine());
@@ -651,11 +679,13 @@ public class Main {
                                     // Buscar coche reparado
                                     System.out.print("Introduce el ID del coche reparado: ");
                                     int idCoche = sc.nextInt();
+                                    sc.nextLine();
                                     Coche cocheReparado = em.find(Coche.class, idCoche);
 
                                     // Buscar empleado encargado de la reparacion
-                                    System.out.println("Introduce el ID del empleado encargado de la reparación: ");
+                                    System.out.print("Introduce el ID del empleado encargado de la reparación: ");
                                     int idEmpleado = sc.nextInt();
+                                    sc.nextLine();
                                     Empleado empleadoReparacion = em.find(Empleado.class, idEmpleado);
 
                                     if (cocheReparado != null && empleadoReparacion != null) {
@@ -689,6 +719,7 @@ public class Main {
                                     System.err.println("Formato de fecha no válido");
                                 } catch (InputMismatchException e) {
                                     System.err.println("Error en la introducción de datos"); // si se introducen strings cuando se espera números
+                                    sc.nextLine();
                                 }
                                 break;
 
@@ -733,6 +764,7 @@ public class Main {
                                         // Buscar el nuevo empleado y eliminar el viejo
                                         System.out.print("Introduce el ID del nuevo empleado: ");
                                         int idEmpleado = sc.nextInt();
+                                        sc.nextLine();
 
                                         Empleado empleadoActualizar = em.find(Empleado.class, idEmpleado); //nuevo
                                         Empleado empleadoViejo = reparacionActualizar.getEmpleado(); //viejo
@@ -751,6 +783,7 @@ public class Main {
                                         // Buscar el nuevo coche
                                         System.out.print("Introduce el ID del nuevo coche: ");
                                         int idCoche = sc.nextInt();
+                                        sc.nextLine();
 
                                         Coche cocheActualizar = em.find(Coche.class, idCoche); //nuevo
                                         Coche cocheViejo = reparacionActualizar.getCoche(); //anterior
@@ -789,9 +822,11 @@ public class Main {
 
                                     }
                                 } catch (InputMismatchException e){
-                                    System.err.println("Error en la introducción de datos"); // si se introducen strings cuando se espera ints
+                                    System.err.println("Error en la introducción de datos");
+                                    sc.nextLine();// si se introducen strings cuando se espera ints
                                 } catch (DateTimeParseException e) {
                                     System.err.println("Formato de fecha no válido");
+
                                 }
                             break;
 
@@ -805,7 +840,16 @@ public class Main {
                                     try {
                                         em.getTransaction().begin();
                                         Reparacion reparacionEliminar = em.find(Reparacion.class, idEliminar);
+
                                         if (reparacionEliminar != null) {
+                                            Empleado empleado = reparacionEliminar.getEmpleado();
+                                            empleado.getReparaciones().remove(reparacionEliminar);
+
+                                            Coche coche = reparacionEliminar.getCoche();
+                                            coche.getReparaciones().remove(reparacionEliminar);
+
+                                            em.persist(empleado);
+                                            em.persist(coche);
                                             em.remove(reparacionEliminar);
                                             em.getTransaction().commit();
                                             System.out.println("\nReparación eliminada con éxito");
@@ -819,6 +863,7 @@ public class Main {
                                     }
                                 } catch (InputMismatchException e) {
                                     System.err.println("Error en la introducción de datos.");
+                                    sc.nextLine();
                                 }
                                 break;
 
@@ -907,6 +952,7 @@ public class Main {
                                     System.err.println("Formato de fecha no válido");
                                 } catch (InputMismatchException e) {
                                     System.err.println("Error en la introducción de datos"); // si se introducen strings cuando se espera números
+                                    sc.nextLine();
                                 }
                                 break;
 
@@ -930,7 +976,7 @@ public class Main {
                                 System.out.println(ventas);
                                 break;
 
-                            // Actualizar una Reparacion
+                            // Actualizar una Venta
                             case "4":
                                 try {
                                     System.out.print("Introduce el ID de la venta a actualizar: ");
@@ -1015,6 +1061,7 @@ public class Main {
                                     }
                                 } catch (InputMismatchException e) {
                                     System.err.println("Error en la introducción de datos"); // si se introducen strings cuando se espera ints
+                                    sc.nextLine();
                                 } catch (DateTimeParseException e) {
                                     System.err.println("Formato de fecha no válido");
                                 }
@@ -1030,7 +1077,25 @@ public class Main {
                                     try {
                                         em.getTransaction().begin();
                                         Venta ventaEliminar = em.find(Venta.class, idEliminar);
+
                                         if (ventaEliminar != null) {
+
+                                            for (Coche coche : ventaEliminar.getCoches()) {
+                                                coche.getVentas().remove(ventaEliminar);
+                                                em.persist(coche);
+                                            }
+                                            ventaEliminar.getCoches().clear();
+
+                                            Empleado empleado = ventaEliminar.getEmpleado();
+                                            empleado.getVentas().remove(ventaEliminar);
+                                            em.persist(empleado);
+
+
+                                            Cliente cliente = ventaEliminar.getCliente();
+                                            cliente.getVentas().remove(ventaEliminar);
+                                            em.persist(cliente);
+
+
                                             em.remove(ventaEliminar);
                                             em.getTransaction().commit();
                                             System.out.println("\nVenta eliminada con éxito");
@@ -1044,6 +1109,7 @@ public class Main {
                                     }
                                 } catch (InputMismatchException e) {
                                     System.err.println("Error en la introducción de datos.");
+                                    sc.nextLine();
                                 }
                                 break;
 
@@ -1059,14 +1125,15 @@ public class Main {
                     break;
 
                 // Salir
-                case "7":
+                case "8":
                     System.out.println("Saliendo del programa...");
                     break;
+
                 default:
                     System.out.println("Ingrese una opción válida.");
                     break;
             }
-        } while (!opcion.equals("7"));
+        } while (!opcion.equals("8"));
 
         sc.close();
     }
@@ -1084,7 +1151,8 @@ public class Main {
                 ║  4. Coche.                                          ║
                 ║  5. Reparación.                                     ║
                 ║  6. Venta                                           ║
-                ║  7. Salir                                           ║
+                ║  7. Consultas avanzadas                             ║
+                ║  8. Salir                                           ║
                 ╚═════════════════════════════════════════════════════╝
                 """);
     }
@@ -1092,6 +1160,7 @@ public class Main {
     private static void mostrarMenuOperaciones(String entidad) {
         System.out.println(String.format("""
                 \n
+                ════════════════════════════════════════════════════════
                                        %s
                 ╔══════════════════════════════════════════════════════╗
                 ║ Seleccione una opción de las siguientes:             ║

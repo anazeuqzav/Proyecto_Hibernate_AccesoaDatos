@@ -46,13 +46,13 @@ public class TestDataGenerator {
             Empleado empleado1 = new Empleado("Juan Pérez", "Mecánico", 2500.00, usuario1);
             Empleado empleado2 = new Empleado("María González", "Recepcionista", 1800.00, usuario2);
             Empleado empleado3 = new Empleado("Carlos López", "Mecánico", 2600.00, usuario3);
-            Empleado empleado4 = new Empleado("Ana Ruiz", "Administrativo", 2200.00, usuario4);
+            Empleado empleado4 = new Empleado("Ana Ruiz", "Vendedor", 2200.00, usuario4);
             Empleado empleado5 = new Empleado("Pedro Sánchez", "Jefe de Taller", 3500.00, usuario5);
             Empleado empleado6 = new Empleado("Laura Gómez", "Mecánico", 2400.00, usuario6);
             Empleado empleado7 = new Empleado("José Martín", "Mecánico", 2300.00, usuario7);
             Empleado empleado8 = new Empleado("Sofía Torres", "Mecánico", 2500.00, usuario8);
-            Empleado empleado9 = new Empleado("Diego Fernández", "Recepcionista", 1900.00, usuario9);
-            Empleado empleado10 = new Empleado("Elena Moreno", "Contadora", 2800.00, usuario10);
+            Empleado empleado9 = new Empleado("Diego Fernández", "Vendedor", 1900.00, usuario9);
+            Empleado empleado10 = new Empleado("Elena Moreno", "Vendedor", 2800.00, usuario10);
 
             em.persist(empleado1);
             em.persist(empleado2);
