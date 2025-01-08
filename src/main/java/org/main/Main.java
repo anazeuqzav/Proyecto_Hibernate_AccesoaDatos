@@ -1,10 +1,13 @@
 package org.main;
 
 import org.model.*;
+import org.services.*;
+import org.servicesImpl.*;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.persistence.Query;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.InputMismatchException;
@@ -13,8 +16,18 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
+        // Conexión
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("miUnidadDePersistencia");
         EntityManager em = emf.createEntityManager();
+
+        // DAOs
+        ClienteDAO clienteDAO = new ClienteDAOImpl(em);
+        UsuarioDAO usuarioDAO = new UsuarioDAOImpl(em);
+        EmpleadoDAO empleadoDAO = new EmpleadoDAOImpl(em);
+        CocheDAO cocheDAO = new CocheDAOImpl(em);
+        ReparacionDAO reparacionDAO = new ReparacionDAOImpl(em);
+        VentaDAO ventaDAO = new VentaDAOImpl(em);
+
 
         Scanner sc = new Scanner(System.in);
         String opcion;
@@ -40,15 +53,8 @@ public class Main {
 
                                 Usuario usuario = new Usuario(nombre, contrasena);
 
-                                try {
-                                    em.getTransaction().begin();
-                                    em.persist(usuario);
-                                    em.getTransaction().commit();
-                                    System.out.println("Usuario creado con éxito");
-                                } catch (Exception e) {
-                                    em.getTransaction().rollback();
-                                    System.err.println("Error al persistir la entidad: " + e.getMessage());
-                                }
+                                usuarioDAO.save(usuario);
+
                                 break;
 
                             // Buscar Usuario por ID
@@ -58,7 +64,8 @@ public class Main {
                                     int idUsuario = sc.nextInt();
                                     sc.nextLine();
 
-                                    Usuario usuarioEncontrado = em.find(Usuario.class, idUsuario);
+                                    Usuario usuarioEncontrado = usuarioDAO.findById(idUsuario);
+
                                     if (usuarioEncontrado != null) {
                                         System.out.println(usuarioEncontrado);
                                     } else {
@@ -71,7 +78,7 @@ public class Main {
 
                             // Listar todos los Usuarios
                             case "3":
-                                List<Usuario> usuarios = em.createQuery("SELECT u FROM Usuario u", Usuario.class).getResultList();
+                                List<Usuario> usuarios = usuarioDAO.findAll();
                                 System.out.println(usuarios);
                                 break;
 
@@ -94,15 +101,7 @@ public class Main {
                                         usuarioActualizar.setUsername(usernameNuevo);
                                         usuarioActualizar.setPassword(contrasenaNueva);
 
-                                        try {
-                                            em.getTransaction().begin();
-                                            em.persist(usuarioActualizar);
-                                            em.getTransaction().commit();
-                                            System.out.println("Usuario actualizado con éxito");
-                                        } catch (Exception e) {
-                                            em.getTransaction().rollback();
-                                            System.err.println("Error al persistir la entidad: " + e.getMessage());
-                                        }
+                                        usuarioDAO.update(usuarioActualizar);
 
                                     } else {
                                         System.err.println("\n Usuario no encontrado.");
@@ -120,21 +119,7 @@ public class Main {
                                     int idEliminar = sc.nextInt();
                                     sc.nextLine();
 
-                                    try {
-                                        em.getTransaction().begin();
-                                        Usuario usuarioEliminar = em.find(Usuario.class, idEliminar);
-                                        if (usuarioEliminar != null) {
-                                            em.remove(usuarioEliminar);
-                                            em.getTransaction().commit();
-                                            System.out.println("Usuario eliminado con éxito");
-                                        } else {
-                                            System.err.println("\nUsuario no encontrado.");
-                                            em.getTransaction().rollback();
-                                        }
-                                    } catch (Exception e) {
-                                        em.getTransaction().rollback();
-                                        System.err.println("Error al eliminar la entidad: " + e.getMessage());
-                                    }
+                                    usuarioDAO.delete(idEliminar);
 
                                 } catch (InputMismatchException e){
                                     System.err.println("Error en la introducción de datos.");
@@ -173,22 +158,13 @@ public class Main {
                                     int usuarioId = sc.nextInt();
                                     sc.nextLine();
 
-                                    Usuario usuarioEncontrado = em.find(Usuario.class, usuarioId);
+                                    Usuario usuarioEncontrado = usuarioDAO.findById(usuarioId);
                                     if (usuarioEncontrado != null) {
                                         Empleado empleado = new Empleado(nombre, puesto, salario, usuarioEncontrado);
                                         usuarioEncontrado.setEmpleado(empleado);
 
-                                        try {
-                                            em.getTransaction().begin();
-                                            em.persist(empleado);
-                                            em.persist(usuarioEncontrado);
-                                            em.getTransaction().commit();
-                                            System.out.println("Empleado creado con éxito");
-                                        } catch (Exception e) {
-                                            em.getTransaction().rollback();
-                                            System.err.println("Error al persistir la entidad: " + e.getMessage());
-                                        }
-                                        break;
+                                        empleadoDAO.save(empleado);
+                                        usuarioDAO.update(usuarioEncontrado);
 
                                     } else {
                                         System.err.println("\nUsuario no encontrado.");
@@ -207,7 +183,7 @@ public class Main {
                                     int idEmpleado = sc.nextInt();
                                     sc.nextLine();
 
-                                    Empleado empleadoEncontrado = em.find(Empleado.class, idEmpleado);
+                                    Empleado empleadoEncontrado = empleadoDAO.findById(idEmpleado);
                                     if (empleadoEncontrado != null) {
                                         System.out.println(empleadoEncontrado);
                                     } else {
@@ -221,7 +197,7 @@ public class Main {
 
                             // Listar todos los Empleados
                             case "3":
-                                List<Empleado> empleados = em.createQuery("SELECT e FROM Empleado e", Empleado.class).getResultList();
+                                List<Empleado> empleados = empleadoDAO.findAll();
                                 System.out.println(empleados);
                                 break;
 
@@ -232,7 +208,7 @@ public class Main {
                                     int idActualizar = sc.nextInt();
                                     sc.nextLine();
 
-                                    Empleado empleadoActualizar = em.find(Empleado.class, idActualizar);
+                                    Empleado empleadoActualizar = empleadoDAO.findById(idActualizar);
 
                                     if (empleadoActualizar != null){
                                         System.out.print("Introduce el nuevo nombre: ");
@@ -247,27 +223,21 @@ public class Main {
                                         sc.nextLine();
 
                                         Usuario usuarioViejo = empleadoActualizar.getUsuario();
-                                        Usuario usuarioActualizar = em.find(Usuario.class, idUsuario);
+                                        Usuario usuarioNuevo = usuarioDAO.findById(idUsuario);
 
-                                        if(usuarioActualizar != null){
-                                            usuarioViejo.setEmpleado(null);
+                                        if(usuarioNuevo != null){
+                                            usuarioViejo.setEmpleado(null); // borrar el empleado del usuario viejo
 
                                             empleadoActualizar.setNombre(nombreNuevo);
                                             empleadoActualizar.setPuesto(puestoNuevo);
                                             empleadoActualizar.setSalario(salarioNuevo);
-                                            empleadoActualizar.setUsuario(usuarioActualizar);
+                                            empleadoActualizar.setUsuario(usuarioNuevo);
 
-                                            usuarioActualizar.setEmpleado(empleadoActualizar);
+                                            usuarioNuevo.setEmpleado(empleadoActualizar);
 
-                                            try {
-                                                em.getTransaction().begin();
-                                                em.persist(empleadoActualizar);
-                                                em.getTransaction().commit();
-                                                System.out.println("Empleado actualizado con éxito");
-                                            } catch (Exception e) {
-                                                em.getTransaction().rollback();
-                                                System.err.println("Error al persistir la entidad: " + e.getMessage());
-                                            }
+                                            usuarioDAO.update(usuarioViejo);
+                                            usuarioDAO.update(usuarioNuevo);
+                                            empleadoDAO.update(empleadoActualizar);
 
                                         } else {
                                             System.out.println("No se ha encontrado el usuario.");
@@ -289,21 +259,7 @@ public class Main {
                                     int idEliminar = sc.nextInt();
                                     sc.nextLine();
 
-                                    try {
-                                        em.getTransaction().begin();
-                                        Empleado empleadoEliminar = em.find(Empleado.class, idEliminar);
-                                        if (empleadoEliminar != null) {
-                                            em.remove(empleadoEliminar);
-                                            em.getTransaction().commit();
-                                            System.out.println("\nEmpleado eliminado con éxito");
-                                        } else {
-                                            System.err.println("\nEmpleado no encontrado.");
-                                            em.getTransaction().rollback();
-                                        }
-                                    } catch (Exception e) {
-                                        em.getTransaction().rollback();
-                                        System.err.println("Error al eliminar la entidad: " + e.getMessage());
-                                    }
+                                    empleadoDAO.delete(idEliminar);
 
                                 } catch (InputMismatchException e){
                                     System.err.println("Error en la introducción de datos.");
@@ -356,15 +312,8 @@ public class Main {
 
                                 Cliente cliente = new Cliente(nombre, email, telefono);
 
-                                try {
-                                    em.getTransaction().begin();
-                                    em.persist(cliente);
-                                    em.getTransaction().commit();
-                                    System.out.println("Cliente creado con éxito");
-                                } catch (Exception e) {
-                                    em.getTransaction().rollback();
-                                    System.err.println("Error al persistir la entidad: " + e.getMessage());
-                                }
+                                clienteDAO.save(cliente);
+
                                 break;
 
                             // Buscar Cliente por ID
@@ -374,7 +323,7 @@ public class Main {
                                     int idCliente = sc.nextInt();
                                     sc.nextLine();
 
-                                    Cliente clienteEncontrado = em.find(Cliente.class, idCliente);
+                                    Cliente clienteEncontrado = clienteDAO.findById(idCliente);
                                     if (clienteEncontrado != null) {
                                         System.out.println(clienteEncontrado);
                                     } else {
@@ -389,7 +338,7 @@ public class Main {
 
                             // Listar todos los Clientes
                             case "3":
-                                List<Cliente> clientes = em.createQuery("SELECT c FROM Cliente c", Cliente.class).getResultList();
+                                List<Cliente> clientes = clienteDAO.findAll();
                                 System.out.println(clientes);
                                 break;
 
@@ -400,7 +349,7 @@ public class Main {
                                     int idActualizar = sc.nextInt();
                                     sc.nextLine();
 
-                                    Cliente clienteActualizar = em.find(Cliente.class, idActualizar);
+                                    Cliente clienteActualizar = clienteDAO.findById(idActualizar);
 
                                     if (clienteActualizar != null){
                                         System.out.print("Introduce el nuevo nombre: ");
@@ -430,15 +379,7 @@ public class Main {
                                         clienteActualizar.setEmail(emailNuevo);
                                         clienteActualizar.setTelefono(telefonoNuevo);
 
-                                        try {
-                                            em.getTransaction().begin();
-                                            em.persist(clienteActualizar);
-                                            em.getTransaction().commit();
-                                            System.out.println("Cliente actualizado con éxito");
-                                        } catch (Exception e) {
-                                            em.getTransaction().rollback();
-                                            System.err.println("Error al persistir la entidad: " + e.getMessage());
-                                        }
+                                       clienteDAO.update(clienteActualizar);
 
                                     } else {
                                         System.err.println("\n Cliente no encontrado.");
@@ -457,21 +398,7 @@ public class Main {
                                     int idEliminar = sc.nextInt();
                                     sc.nextLine();
 
-                                    try {
-                                        em.getTransaction().begin();
-                                        Cliente clienteEliminar = em.find(Cliente.class, idEliminar);
-                                        if (clienteEliminar != null) {
-                                            em.remove(clienteEliminar);
-                                            em.getTransaction().commit();
-                                            System.out.println("\nCliente eliminado con éxito");
-                                        } else {
-                                            System.err.println("\nCliente no encontrado.");
-                                            em.getTransaction().rollback();
-                                        }
-                                    } catch (Exception e) {
-                                        em.getTransaction().rollback();
-                                        System.err.println("Error al eliminar la entidad: " + e.getMessage());
-                                    }
+                                    clienteDAO.delete(idEliminar);
 
                                 } catch (InputMismatchException e){
                                     System.err.println("Error en la introducción de datos.");
@@ -513,30 +440,22 @@ public class Main {
                                     int idCliente = sc.nextInt();
                                     sc.nextLine();
 
-                                    Cliente clienteEncontrado = em.find(Cliente.class, idCliente);
+                                    Cliente clienteEncontrado = clienteDAO.findById(idCliente);
 
                                     if (clienteEncontrado != null) {
                                         Coche coche = new Coche(marca, modelo, anio, precio);
-                                        clienteEncontrado.getCoches().add(coche);
-                                        coche.getClientes().add(clienteEncontrado);
+                                        clienteEncontrado.getCoches().add(coche); // añade el coche al cliente
+                                        coche.getClientes().add(clienteEncontrado); // añade el cliente al coche
 
-                                        try {
-                                            em.getTransaction().begin();
-                                            em.persist(coche);
-                                            em.persist(clienteEncontrado);
-                                            em.getTransaction().commit();
-                                            System.out.println("Coche creado con éxito");
-                                        } catch (Exception e) {
-                                            em.getTransaction().rollback();
-                                            System.err.println("Error al persistir la entidad: " + e.getMessage());
-                                        }
-                                        break;
+                                        cocheDAO.save(coche);
+                                        clienteDAO.update(clienteEncontrado);
 
                                     } else {
                                         System.err.println("\nCliente no encontrado.");
                                     }
                                 } catch (InputMismatchException e){
                                     System.err.println("Error en la introducción de datos.");
+                                    sc.nextLine();
                                 }
                                 break;
 
@@ -547,7 +466,7 @@ public class Main {
                                     int idCoche = sc.nextInt();
                                     sc.nextLine();
 
-                                    Coche cocheEncontrado = em.find(Coche.class, idCoche);
+                                    Coche cocheEncontrado = cocheDAO.findById(idCoche);
                                     if (cocheEncontrado != null) {
                                         System.out.println(cocheEncontrado);
                                     } else {
@@ -561,7 +480,7 @@ public class Main {
 
                             // Listar todos los Coches
                             case "3":
-                                List<Coche> coches = em.createQuery("SELECT c FROM Coche c", Coche.class).getResultList();
+                                List<Coche> coches = cocheDAO.findAll();
                                 System.out.println(coches);
                                 break;
 
@@ -571,7 +490,7 @@ public class Main {
                                     int idActualizar = sc.nextInt();
                                     sc.nextLine();
 
-                                    Coche cocheActualizar = em.find(Coche.class, idActualizar);
+                                    Coche cocheActualizar = cocheDAO.findById(idActualizar);
 
                                     if (cocheActualizar != null){
                                         System.out.print("Introduce la nueva marca: ");
@@ -589,15 +508,7 @@ public class Main {
                                         cocheActualizar.setAnio(anioNuevo);
                                         cocheActualizar.setPrecio(precioNuevo);
 
-                                        try {
-                                            em.getTransaction().begin();
-                                            em.persist(cocheActualizar);
-                                            em.getTransaction().commit();
-                                            System.out.println("Coche actualizado con éxito");
-                                        } catch (Exception e) {
-                                            em.getTransaction().rollback();
-                                            System.err.println("Error al persistir la entidad: " + e.getMessage());
-                                        }
+                                        cocheDAO.update(cocheActualizar);
 
                                     } else {
                                         System.err.println("\n Coche no encontrado.");
@@ -615,31 +526,8 @@ public class Main {
                                     int idEliminar = sc.nextInt();
                                     sc.nextLine();
 
-                                    try {
-                                        em.getTransaction().begin();
-                                        Coche cocheEliminar = em.find(Coche.class, idEliminar);
-                                        if (cocheEliminar != null) {
+                                    cocheDAO.delete(idEliminar);
 
-                                            // Para cada cliente de coche que queremos eliminar se borra el coche.
-                                            List<Cliente> clientesEliminar = cocheEliminar.getClientes();
-                                            for(Cliente c:clientesEliminar){
-                                                c.getCoches().remove(cocheEliminar);
-                                                em.persist(c);
-                                            }
-                                            cocheEliminar.getClientes().clear();
-                                            em.persist(cocheEliminar);
-
-                                            em.remove(cocheEliminar);
-                                            em.getTransaction().commit();
-                                            System.out.println("\nCoche eliminado con éxito");
-                                        } else {
-                                            System.err.println("\nCoche no encontrado.");
-                                            em.getTransaction().rollback();
-                                        }
-                                    } catch (Exception e) {
-                                        em.getTransaction().rollback();
-                                        System.err.println("Error al eliminar la entidad: " + e.getMessage());
-                                    }
                                 } catch (InputMismatchException e){
                                     System.err.println("Error en la introducción de datos.");
                                     sc.nextLine();
@@ -680,13 +568,13 @@ public class Main {
                                     System.out.print("Introduce el ID del coche reparado: ");
                                     int idCoche = sc.nextInt();
                                     sc.nextLine();
-                                    Coche cocheReparado = em.find(Coche.class, idCoche);
+                                    Coche cocheReparado = cocheDAO.findById(idCoche);
 
                                     // Buscar empleado encargado de la reparacion
                                     System.out.print("Introduce el ID del empleado encargado de la reparación: ");
                                     int idEmpleado = sc.nextInt();
                                     sc.nextLine();
-                                    Empleado empleadoReparacion = em.find(Empleado.class, idEmpleado);
+                                    Empleado empleadoReparacion = empleadoDAO.findById(idEmpleado);
 
                                     if (cocheReparado != null && empleadoReparacion != null) {
                                         if (empleadoReparacion.getPuesto().equals("Mecánico")) {
@@ -698,17 +586,10 @@ public class Main {
                                             empleadoReparacion.getReparaciones().add(reparacion);
                                             reparacion.setEmpleado(empleadoReparacion);
 
-                                            try {
-                                                em.getTransaction().begin();
-                                                em.persist(reparacion);
-                                                em.persist(cocheReparado);
-                                                em.persist(empleadoReparacion);
-                                                em.getTransaction().commit();
-                                                System.out.println("Reparación creada con éxito");
-                                            } catch (Exception e) {
-                                                em.getTransaction().rollback();
-                                                System.err.println("Error al persistir la entidad: " + e.getMessage());
-                                            }
+                                            reparacionDAO.save(reparacion);
+                                            cocheDAO.update(cocheReparado);
+                                            empleadoDAO.update(empleadoReparacion);
+
                                         } else {
                                             System.err.println("El empleado no es mecánico. No puede hacer una reparación.");
                                         }
@@ -729,17 +610,17 @@ public class Main {
                                 int idReparacion = sc.nextInt();
                                 sc.nextLine();
 
-                                Reparacion reparacionEncontrada = em.find(Reparacion.class, idReparacion);
+                                Reparacion reparacionEncontrada = reparacionDAO.findById(idReparacion);
                                 if (reparacionEncontrada != null) {
                                     System.out.println(reparacionEncontrada);
                                 } else {
-                                    System.err.println("\nReparacion no encontrada.");
+                                    System.err.println("\nReparación no encontrada.");
                                 }
                                 break;
 
                             // Listar todas las Reparaciones
                             case "3":
-                                List<Reparacion> reparaciones = em.createQuery("SELECT r FROM Reparacion r", Reparacion.class).getResultList();
+                                List<Reparacion> reparaciones = reparacionDAO.findAll();
                                 System.out.println(reparaciones);
                                 break;
 
@@ -750,7 +631,7 @@ public class Main {
                                     int idActualizar = sc.nextInt();
                                     sc.nextLine();
 
-                                    Reparacion reparacionActualizar = em.find(Reparacion.class, idActualizar);
+                                    Reparacion reparacionActualizar = reparacionDAO.findById(idActualizar);
 
                                     if (reparacionActualizar != null) {
                                         System.out.print("Introduce la nueva descripcion: ");
@@ -758,15 +639,17 @@ public class Main {
 
                                         System.out.print("Introduce la nueva fecha (aaaa-mm-dd): ");
                                         LocalDate fechaNueva = LocalDate.parse(sc.nextLine());
+
                                         System.out.print("Introduce el nuevo costo: ");
                                         double costoNuevo = sc.nextDouble();
+                                        sc.nextLine();
 
                                         // Buscar el nuevo empleado y eliminar el viejo
                                         System.out.print("Introduce el ID del nuevo empleado: ");
                                         int idEmpleado = sc.nextInt();
                                         sc.nextLine();
 
-                                        Empleado empleadoActualizar = em.find(Empleado.class, idEmpleado); //nuevo
+                                        Empleado empleadoActualizar = empleadoDAO.findById(idEmpleado);
                                         Empleado empleadoViejo = reparacionActualizar.getEmpleado(); //viejo
 
                                         if (empleadoActualizar != null) {
@@ -785,7 +668,7 @@ public class Main {
                                         int idCoche = sc.nextInt();
                                         sc.nextLine();
 
-                                        Coche cocheActualizar = em.find(Coche.class, idCoche); //nuevo
+                                        Coche cocheActualizar = cocheDAO.findById(idCoche); //nuevo
                                         Coche cocheViejo = reparacionActualizar.getCoche(); //anterior
 
                                         if (cocheActualizar != null) {
@@ -803,19 +686,7 @@ public class Main {
                                         reparacionActualizar.setFecha(fechaNueva);
                                         reparacionActualizar.setCosto(costoNuevo);
 
-                                        try {
-                                            em.getTransaction().begin();
-                                            em.persist(cocheActualizar);
-                                            em.persist(cocheViejo);
-                                            em.persist(empleadoActualizar);
-                                            em.persist(empleadoViejo);
-                                            em.persist(reparacionActualizar);
-                                            em.getTransaction().commit();
-                                            System.out.println("Reparación actualizada con éxito");
-                                        } catch (Exception e) {
-                                            em.getTransaction().rollback();
-                                            System.err.println("Error al persistir la entidad: " + e.getMessage());
-                                        }
+                                        reparacionDAO.update(reparacionActualizar);
 
                                     } else {
                                         System.err.println("\n Coche no encontrado.");
@@ -837,30 +708,8 @@ public class Main {
                                     int idEliminar = sc.nextInt();
                                     sc.nextLine();
 
-                                    try {
-                                        em.getTransaction().begin();
-                                        Reparacion reparacionEliminar = em.find(Reparacion.class, idEliminar);
+                                    reparacionDAO.delete(idEliminar);
 
-                                        if (reparacionEliminar != null) {
-                                            Empleado empleado = reparacionEliminar.getEmpleado();
-                                            empleado.getReparaciones().remove(reparacionEliminar);
-
-                                            Coche coche = reparacionEliminar.getCoche();
-                                            coche.getReparaciones().remove(reparacionEliminar);
-
-                                            em.persist(empleado);
-                                            em.persist(coche);
-                                            em.remove(reparacionEliminar);
-                                            em.getTransaction().commit();
-                                            System.out.println("\nReparación eliminada con éxito");
-                                        } else {
-                                            System.err.println("\nReparacion no encontrada.");
-                                            em.getTransaction().rollback();
-                                        }
-                                    } catch (Exception e) {
-                                        em.getTransaction().rollback();
-                                        System.err.println("Error al eliminar la entidad: " + e.getMessage());
-                                    }
                                 } catch (InputMismatchException e) {
                                     System.err.println("Error en la introducción de datos.");
                                     sc.nextLine();
@@ -877,6 +726,7 @@ public class Main {
                         }
                     } while (!opcion.equals("6"));
                     break;
+
                 // Venta
                 case "6":
                     do {
@@ -895,13 +745,12 @@ public class Main {
                                     // Empleado encargado de la venta
                                     System.out.print("Introduce el ID del empleado vendedor: ");
                                     int idEmpleado = sc.nextInt();
-                                    Empleado empleadoVenta = em.find(Empleado.class, idEmpleado);
+                                    Empleado empleadoVenta = empleadoDAO.findById(idEmpleado);
 
                                     // Cliente de la venta
-                                    System.out.println("Introduce el ID del cliente: ");
+                                    System.out.println("Introduce el ID del cliente comprador: ");
                                     int idCliente = sc.nextInt();
-
-                                    Cliente clienteVenta = em.find(Cliente.class, idCliente);
+                                    Cliente clienteVenta = clienteDAO.findById(idCliente);
 
                                     if (empleadoVenta != null && clienteVenta != null) {
                                         if (empleadoVenta.getPuesto().equals("Vendedor")) {
@@ -913,27 +762,17 @@ public class Main {
                                                 System.out.print("Introduce el ID del coche vendido: ");
                                                 int idCoche = sc.nextInt();
                                                 sc.nextLine();
-                                                Coche cocheVendido = em.find(Coche.class, idCoche);
+                                                Coche cocheVendido = cocheDAO.findById(idCoche);
+
+                                                System.out.println(cocheVendido.getClientes().getLast());
 
                                                 if (cocheVendido != null) {
                                                     venta.getCoches().add(cocheVendido);
-                                                    cocheVendido.getVentas().add(venta);
+                                                    clienteVenta.getCoches().add(cocheVendido);
 
-                                                    empleadoVenta.getVentas().add(venta);
-                                                    clienteVenta.getVentas().add(venta);
+                                                    clienteDAO.update(clienteVenta);
+                                                    ventaDAO.save(venta);
 
-                                                    try {
-                                                        em.getTransaction().begin();
-                                                        em.persist(venta);
-                                                        em.persist(cocheVendido);
-                                                        em.persist(clienteVenta);
-                                                        em.persist(empleadoVenta);
-                                                        em.getTransaction().commit();
-                                                        System.out.println("Venta añadida con éxito");
-                                                    } catch (Exception e) {
-                                                        em.getTransaction().rollback();
-                                                        System.err.println("Error al persistir la entidad: " + e.getMessage());
-                                                    }
                                                 } else {
                                                     System.out.println("Coche no encontrado");
                                                 }
@@ -962,7 +801,7 @@ public class Main {
                                 int idVenta = sc.nextInt();
                                 sc.nextLine();
 
-                                Venta ventaEncontrada = em.find(Venta.class, idVenta);
+                                Venta ventaEncontrada = ventaDAO.findById(idVenta);
                                 if (ventaEncontrada != null) {
                                     System.out.println(ventaEncontrada);
                                 } else {
@@ -972,7 +811,7 @@ public class Main {
 
                             // Listar todas las Reparaciones
                             case "3":
-                                List<Venta> ventas = em.createQuery("SELECT v FROM Venta v", Venta.class).getResultList();
+                                List<Venta> ventas = ventaDAO.findAll();
                                 System.out.println(ventas);
                                 break;
 
@@ -983,87 +822,73 @@ public class Main {
                                     int idActualizar = sc.nextInt();
                                     sc.nextLine();
 
-                                    Venta ventaActualizar = em.find(Venta.class, idActualizar);
+                                    Venta ventaActualizar = ventaDAO.findById(idActualizar);
 
                                     if (ventaActualizar != null) {
-
                                         System.out.print("Introduce la nueva fecha (aaaa-mm-dd): ");
                                         LocalDate fechaNueva = LocalDate.parse(sc.nextLine());
                                         System.out.print("Introduce el nuevo monto: ");
                                         double montoNuevo = sc.nextDouble();
+                                        sc.nextLine();
 
-                                        // Buscar el nuevo empleado y eliminar el viejo
+                                        // Actualizar atributos básicos
+                                        ventaActualizar.setFecha(fechaNueva);
+                                        ventaActualizar.setMonto(montoNuevo);
+
+                                        // Actualizar empleado
                                         System.out.print("Introduce el ID del nuevo empleado: ");
                                         int idEmpleado = sc.nextInt();
+                                        sc.nextLine();
 
-                                        Empleado empleadoActualizar = em.find(Empleado.class, idEmpleado); //nuevo
-                                        Empleado empleadoViejo = ventaActualizar.getEmpleado(); //viejo
-
-                                        System.out.println("Introduce el ID del cliente nuevo: ");
-                                        int idCliente = sc.nextInt();
-
-                                        Cliente clienteActualizar = em.find(Cliente.class, idCliente);
-                                        Cliente clienteViejo = ventaActualizar.getCliente();
-
-                                        if (empleadoActualizar != null && clienteActualizar != null) {
-                                            if (empleadoActualizar.getPuesto().equals("Vendedor")) {
-                                                ventaActualizar.getCoches().clear(); // elimino la lista de coches anteriores
-
-                                                // Buscar coche vendido
-                                                String respuesta = "";
-                                                do {
-                                                    System.out.print("Introduce el ID del coche vendido: ");
-                                                    int idCoche = sc.nextInt();
-                                                    sc.nextLine();
-                                                    Coche cocheVendido = em.find(Coche.class, idCoche);
-
-                                                    if (cocheVendido != null) {
-                                                        // añadimos los coches nuevos
-                                                        ventaActualizar.getCoches().add(cocheVendido);
-                                                        cocheVendido.getVentas().add(ventaActualizar);
-
-                                                        ventaActualizar.setEmpleado(empleadoActualizar);
-                                                        ventaActualizar.setCliente(clienteActualizar);
-
-                                                        empleadoActualizar.getVentas().add(ventaActualizar);
-                                                        clienteActualizar.getVentas().add(ventaActualizar);
-
-                                                        try {
-                                                            em.getTransaction().begin();
-                                                            em.persist(ventaActualizar);
-                                                            em.persist(cocheVendido);
-                                                            em.persist(empleadoViejo);
-                                                            em.persist(empleadoActualizar);
-                                                            em.persist(clienteViejo);
-                                                            em.persist(clienteActualizar);
-                                                            em.getTransaction().commit();
-                                                            System.out.println("Venta añadida con éxito");
-                                                        } catch (Exception e) {
-                                                            em.getTransaction().rollback();
-                                                            System.err.println("Error al persistir la entidad: " + e.getMessage());
-                                                        }
-                                                    } else {
-                                                        System.out.println("Coche no encontrado");
-                                                    }
-                                                    System.out.println("¿Quieres añadir otro coche a la venta? (S/N)");
-                                                    respuesta = sc.nextLine();
-                                                } while (respuesta.equalsIgnoreCase("S"));
-
-                                            } else {
-                                                System.out.println("El empleado no es un vendendor");
-                                            }
-                                        } else {
-                                            System.out.println("No se encontró el empleado o el cliente");
+                                        Empleado empleadoActualizar = empleadoDAO.findById(idEmpleado);
+                                        if (empleadoActualizar == null || !empleadoActualizar.getPuesto().equals("Vendedor")) {
+                                            System.out.println("El empleado no existe o no es un vendedor.");
+                                            break;
                                         }
+                                        ventaActualizar.setEmpleado(empleadoActualizar);
 
+                                        // Actualizar cliente
+                                        System.out.print("Introduce el ID del nuevo cliente: ");
+                                        int idCliente = sc.nextInt();
+                                        sc.nextLine();
+
+                                        Cliente clienteActualizar = clienteDAO.findById(idCliente);
+                                        if (clienteActualizar != null) {
+                                            ventaActualizar.setCliente(clienteActualizar);
+
+                                            // Actualizar coches vendidos
+                                            ventaActualizar.getCoches().clear(); // Eliminar coches anteriores
+                                            String respuesta;
+                                            do {
+                                                System.out.print("Introduce el ID del coche vendido: ");
+                                                int idCoche = sc.nextInt();
+                                                sc.nextLine();
+
+                                                Coche cocheVendido = cocheDAO.findById(idCoche);
+                                                if (cocheVendido != null) {
+                                                    ventaActualizar.getCoches().add(cocheVendido);
+                                                    cocheVendido.getVentas().add(ventaActualizar);
+                                                } else {
+                                                    System.out.println("Coche no encontrado.");
+                                                }
+
+                                                System.out.print("¿Quieres añadir otro coche a la venta? (S/N): ");
+                                                respuesta = sc.nextLine();
+                                            } while (respuesta.equalsIgnoreCase("S"));
+
+                                            ventaDAO.update(ventaActualizar);
+                                            System.out.println("Venta actualizada con éxito.");
+                                        } else {
+                                            System.out.println("Cliente no encontrado.");
+                                        }
                                     } else {
-                                        System.out.println("No se encontró la venta");
+                                        System.out.println("No se encontró la venta.");
                                     }
                                 } catch (InputMismatchException e) {
-                                    System.err.println("Error en la introducción de datos"); // si se introducen strings cuando se espera ints
+                                    System.err.println("Error en la introducción de datos."); // Si se introducen strings cuando se espera un número
                                     sc.nextLine();
                                 } catch (DateTimeParseException e) {
-                                    System.err.println("Formato de fecha no válido");
+                                    System.err.println("Formato de fecha no válido.");
                                 }
                                 break;
 
@@ -1074,39 +899,8 @@ public class Main {
                                     int idEliminar = sc.nextInt();
                                     sc.nextLine();
 
-                                    try {
-                                        em.getTransaction().begin();
-                                        Venta ventaEliminar = em.find(Venta.class, idEliminar);
+                                    ventaDAO.delete(idEliminar);
 
-                                        if (ventaEliminar != null) {
-
-                                            for (Coche coche : ventaEliminar.getCoches()) {
-                                                coche.getVentas().remove(ventaEliminar);
-                                                em.persist(coche);
-                                            }
-                                            ventaEliminar.getCoches().clear();
-
-                                            Empleado empleado = ventaEliminar.getEmpleado();
-                                            empleado.getVentas().remove(ventaEliminar);
-                                            em.persist(empleado);
-
-
-                                            Cliente cliente = ventaEliminar.getCliente();
-                                            cliente.getVentas().remove(ventaEliminar);
-                                            em.persist(cliente);
-
-
-                                            em.remove(ventaEliminar);
-                                            em.getTransaction().commit();
-                                            System.out.println("\nVenta eliminada con éxito");
-                                        } else {
-                                            System.err.println("\nVenta no encontrada.");
-                                            em.getTransaction().rollback();
-                                        }
-                                    } catch (Exception e) {
-                                        em.getTransaction().rollback();
-                                        System.err.println("Error al eliminar la entidad: " + e.getMessage());
-                                    }
                                 } catch (InputMismatchException e) {
                                     System.err.println("Error en la introducción de datos.");
                                     sc.nextLine();
@@ -1123,6 +917,97 @@ public class Main {
                         }
                     } while (!opcion.equals("6"));
                     break;
+
+                case "7":
+                    do{
+                        mostrarMenuConsultas();
+                        opcion = sc.nextLine();
+
+                        switch (opcion){
+                            case "1":
+                                // Listar todos los coches vendidos en un rango de fechas
+                                try {
+                                    System.out.print("Ingrese la fecha de inicio (aaaa-mm-dd): ");
+                                    LocalDate fechaInicio = LocalDate.parse(sc.nextLine());
+                                    System.out.print("Ingrese la fecha de fin (aaaa-mm-dd): ");
+                                    LocalDate fechaFin = LocalDate.parse(sc.nextLine());
+
+                                    List<Coche> resultados = cocheDAO.cochesVendidosFecha(fechaInicio, fechaFin);
+
+                                    System.out.println("\nCoches vendidos en el rango de fechas:");
+                                    System.out.println(resultados);
+                                } catch (DateTimeParseException e){
+                                    System.err.println("Formato de fecha incorrecto");
+                                }
+                                break;
+                            case "2":
+                                // Mostrar las reparaciones realizadas por un mecánico específico
+                                try{
+                                    System.out.print("Ingrese el ID del mecánico: ");
+                                    int idEmpleado = sc.nextInt();
+                                    sc.nextLine();
+                                    Empleado empleadoReparaciones = empleadoDAO.findById(idEmpleado);
+                                    if(empleadoReparaciones != null){
+                                        if(empleadoReparaciones.getPuesto().equals("Mecánico")){
+                                            List<Reparacion> resultados = reparacionDAO.reparacionesById(idEmpleado);
+                                            System.out.println("\nReparaciones realizadas por el mecánico:");
+                                            System.out.println(resultados);
+                                        } else {
+                                            System.out.println("El empleado no es mecánico. No tiene reparaciones.");
+                                        }
+                                    } else {
+                                        System.out.println("No se encontró el empleado.");
+                                    }
+                                } catch (InputMismatchException e){
+                                    System.err.println("Error al introducir datos");
+                                }
+                                break;
+
+                            case "3":
+                                // Obtener los coches que ha comprado un cliente en particular.
+                                try{
+                                    System.out.print("Ingrese el ID del cliente: ");
+                                    int idCliente = sc.nextInt();
+                                    sc.nextLine();
+
+                                    if(clienteDAO.findById(idCliente) != null){
+                                        List<Coche> resultados = cocheDAO.cochesByIdCliente(idCliente);
+                                        System.out.println("\nCoches comprados por el cliente:");
+                                        System.out.println(resultados);
+                                    } else {
+                                        System.out.println("No se encontró el cliente.");
+                                    }
+
+                                } catch (InputMismatchException e){
+                                    System.err.println("Error al introducir datos");
+                                    sc.nextLine();
+                                }
+                                break;
+
+                            case "4":
+                                // Calcular el total de ingresos generados por ventas en un mes.
+                                try {
+                                    System.out.print("Ingrese el mes (1-12): ");
+                                    int mes = sc.nextInt();
+                                    System.out.print("Ingrese el año: ");
+                                    int anio = sc.nextInt();
+                                    sc.nextLine();
+
+                                    Double ingresos = ventaDAO.obtenerIngresosPorMesYAnio(mes, anio);
+                                    System.out.println("\nIngresos totales en el mes: " + ingresos);
+
+                                } catch (InputMismatchException e){
+                                    System.err.println("Error al introducir datos");
+                                    sc.nextLine();
+
+                                }
+                                break;
+                            case "5":
+                                System.out.println("Saliendo al menu principal...");
+                                break;
+                        }
+
+                    } while (!opcion.equals("5"));
 
                 // Salir
                 case "8":
@@ -1141,19 +1026,19 @@ public class Main {
     private static void mostrarMenuPrincipal() {
         System.out.println("""
                 \n
-                ╔═════════════════════════════════════════════════════╗
-                ║             GESTIÓN DE TALLER MECÁNICO              ║
-                ╠═════════════════════════════════════════════════════╣
-                ║ Seleccione una opción de las siguientes:            ║
-                ║  1. Usuario.                                        ║
-                ║  2. Empleado.                                       ║
-                ║  3. Cliente.                                        ║
-                ║  4. Coche.                                          ║
-                ║  5. Reparación.                                     ║
-                ║  6. Venta                                           ║
-                ║  7. Consultas avanzadas                             ║
-                ║  8. Salir                                           ║
-                ╚═════════════════════════════════════════════════════╝
+                ═══════════════════════════════════════════════════════
+                             GESTIÓN DE TALLER MECÁNICO
+                ═══════════════════════════════════════════════════════
+                     Seleccione una opción de las siguientes:
+                      1. Usuario.
+                      2. Empleado.                                       
+                      3. Cliente.                                        
+                      4. Coche.                                          
+                      5. Reparación.                                     
+                      6. Venta                                           
+                      7. Consultas avanzadas                             
+                      8. Salir                                          
+                ═══════════════════════════════════════════════════════
                 """);
     }
 
@@ -1162,16 +1047,33 @@ public class Main {
                 \n
                 ════════════════════════════════════════════════════════
                                        %s
-                ╔══════════════════════════════════════════════════════╗
-                ║ Seleccione una opción de las siguientes:             ║
-                ║  1. Crear un registro                                ║
-                ║  2. Buscar por id                                    ║
-                ║  3. Mostrar todos los registros                      ║
-                ║  4. Actualizar un registro                           ║
-                ║  5. Eliminar un registro                             ║
-                ║  6. Salir al menú principal                          ║
-                ╚══════════════════════════════════════════════════════╝
+                ════════════════════════════════════════════════════════
+                     Seleccione una opción de las siguientes:             
+                      1. Crear un registro                                
+                      2. Buscar por id                                    
+                      3. Mostrar todos los registros                      
+                      4. Actualizar un registro                           
+                      5. Eliminar un registro                             
+                      6. Salir al menú principal                          
+                ════════════════════════════════════════════════════════
                 """, entidad.toUpperCase()));
+
+    }
+
+    private static void mostrarMenuConsultas() {
+        System.out.println("""
+                \n
+                ═══════════════════════════════════════════════════════════════════════════════
+                                            Consultas Avanzadas
+                ═══════════════════════════════════════════════════════════════════════════════
+                    Seleccione una opción de las siguientes:             
+                      1. Listar todos los coches vendidos en un rango de fechas.                            
+                      2. Mostrar las reparaciones realizadas por un mecánico específico.                         
+                      3. Obtener los coches que ha comprado un cliente en particular.                  
+                      4. Calcular el total de ingresos generados por ventas en un mes.                      
+                      5. Salir al menú principal                          
+                ═══════════════════════════════════════════════════════════════════════════════
+                """);
 
     }
 

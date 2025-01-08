@@ -30,8 +30,7 @@ public class Cliente {
     private List<Coche> coches = new ArrayList<>();
 
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
-    private List<Venta> ventas;
-
+    private List<Venta> ventas = new ArrayList<>();
 
     // Constructor
     public Cliente() {

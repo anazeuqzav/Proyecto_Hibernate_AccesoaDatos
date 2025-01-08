@@ -24,7 +24,12 @@ public class Coche {
     @Column(name = "precio")
     private double precio;
 
-    @ManyToMany(mappedBy = "coches", cascade = CascadeType.ALL)
+    @ManyToMany
+    @JoinTable(
+            name = "Venta_Coche",
+            joinColumns = @JoinColumn(name = "coche_id"),
+            inverseJoinColumns = @JoinColumn(name = "venta_id")
+    )
     private List<Venta> ventas = new ArrayList<>();
 
     @OneToMany(mappedBy = "coche", cascade = CascadeType.ALL)
