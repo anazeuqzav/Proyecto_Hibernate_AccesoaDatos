@@ -1,8 +1,5 @@
 package org.utils;
 
-import org.config.HibernateUtil;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.model.*;
 
 import java.time.LocalDate;
@@ -13,6 +10,7 @@ import javax.persistence.Persistence;
 
 public class TestDataGenerator {
     public static void main(String[] args) {
+
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("miUnidadDePersistencia");
         EntityManager em = emf.createEntityManager();
 
@@ -112,11 +110,12 @@ public class TestDataGenerator {
             Reparacion reparacion3 = new Reparacion("Alineación de dirección", LocalDate.of(2024, 3, 5), 100.00, coche3, empleado6);
             Reparacion reparacion4 = new Reparacion("Revisión general", LocalDate.of(2024, 4, 20), 150.00, coche4, empleado7);
             Reparacion reparacion5 = new Reparacion("Cambio de frenos", LocalDate.of(2024, 5, 25), 250.00, coche5, empleado8);
-            Reparacion reparacion6 = new Reparacion("Cambio de batería", LocalDate.of(2024, 6, 30), 120.00, coche1, empleado9);
-            Reparacion reparacion7 = new Reparacion("Reparación de motor", LocalDate.of(2024, 7, 15), 500.00, coche2, empleado10);
-            Reparacion reparacion8 = new Reparacion("Cambio de filtro de aire", LocalDate.of(2024, 8, 10), 80.00, coche3, empleado2);
-            Reparacion reparacion9 = new Reparacion("Revisión de suspensión", LocalDate.of(2024, 9, 5), 180.00, coche4, empleado4);
-            Reparacion reparacion10 = new Reparacion("Limpieza de inyectores", LocalDate.of(2024, 10, 20), 130.00, coche5, empleado5);
+            Reparacion reparacion6 = new Reparacion("Cambio de batería", LocalDate.of(2024, 6, 30), 120.00, coche1, empleado1);
+            Reparacion reparacion7 = new Reparacion("Reparación de motor", LocalDate.of(2024, 7, 15), 500.00, coche2, empleado3);
+            Reparacion reparacion8 = new Reparacion("Cambio de filtro de aire", LocalDate.of(2024, 8, 10), 80.00, coche3, empleado6);
+            Reparacion reparacion9 = new Reparacion("Revisión de suspensión", LocalDate.of(2024, 9, 5), 180.00, coche4, empleado7);
+            Reparacion reparacion10 = new Reparacion("Limpieza de inyectores", LocalDate.of(2024, 10, 20), 130.00, coche5, empleado5); // Jefe de Taller
+
             em.persist(reparacion1);
             em.persist(reparacion2);
             em.persist(reparacion3);
@@ -129,12 +128,14 @@ public class TestDataGenerator {
             em.persist(reparacion10);
 
             // Crear ventas
-            Venta venta1 = new Venta(LocalDate.of(2024, 3, 1), 15000.00, empleado5, cliente1);
-            Venta venta2 = new Venta(LocalDate.of(2024, 6, 15), 12000.00, empleado4, cliente2);
-            Venta venta3 = new Venta(LocalDate.of(2024, 9, 30), 14000.00, empleado3, cliente3);
+            Venta venta1 = new Venta(LocalDate.of(2024, 3, 1), 15000.00, empleado4, cliente1);
+            Venta venta2 = new Venta(LocalDate.of(2024, 6, 15), 12000.00, empleado9, cliente2);
+            Venta venta3 = new Venta(LocalDate.of(2024, 9, 30), 14000.00, empleado10, cliente3);
+            Venta venta4 = new Venta(LocalDate.of(2024, 12, 15), 20000.00, empleado5, cliente4); // Jefe de Taller
             em.persist(venta1);
             em.persist(venta2);
             em.persist(venta3);
+            em.persist(venta4);
 
             // Relacionar ventas y coches (Venta_Coche)
             venta1.getCoches().add(coche1);
@@ -143,9 +144,12 @@ public class TestDataGenerator {
             coche1.getVentas().add(venta1);
             coche2.getVentas().add(venta2);
             coche3.getVentas().add(venta3);
+            coche4.getVentas().add(venta4);
+
             em.persist(venta1);
             em.persist(venta2);
             em.persist(venta3);
+            em.persist(venta4);
 
             // Confirmar transacción
             em.getTransaction().commit();

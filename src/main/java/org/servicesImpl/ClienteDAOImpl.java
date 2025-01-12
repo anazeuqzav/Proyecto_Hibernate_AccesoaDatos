@@ -8,12 +8,18 @@ import javax.persistence.TypedQuery;
 import java.util.List;
 
 public class ClienteDAOImpl implements ClienteDAO {
+    // Conexión
     private EntityManager em;
 
+    // Constructor
     public ClienteDAOImpl(EntityManager em){
         this.em = em;
     }
 
+    /**
+     * Método para guardar un cliente en la bd
+     * @param cliente Objeto cliente a guardar
+     */
     @Override
     public void save(Cliente cliente) {
         try {
@@ -28,17 +34,30 @@ public class ClienteDAOImpl implements ClienteDAO {
         }
     }
 
+    /**
+     * Método para encontrar un cliente por ID guardado en la bd
+     * @param id Identificador del cliente a encontrar
+     * @return objeto cliente
+     */
     @Override
     public Cliente findById(int id) {
         return em.find(Cliente.class, id);
     }
 
+    /**
+     * Método para listar todos los clientes que se encuentran en la bd
+     * @return una lista de clientes
+     */
     @Override
     public List<Cliente> findAll() {
         List<Cliente> clientes = em.createQuery("SELECT c FROM Cliente c", Cliente.class).getResultList();
         return clientes;
     }
 
+    /**
+     * Método para actualizar un cliente que se encuenta en la bd
+     * @param cliente el objeto Cliente para actualizar
+     */
     @Override
     public void update(Cliente cliente) {
         try{
@@ -52,6 +71,10 @@ public class ClienteDAOImpl implements ClienteDAO {
         }
     }
 
+    /**
+     * Método para borrar un cliente en la bd
+     * @param id identificador del cliente a eliminar
+     */
     @Override
     public void delete(int id) {
         try {

@@ -9,8 +9,10 @@ import javax.persistence.TypedQuery;
 import java.util.List;
 
 public class UsuarioDAOImpl implements UsuarioDAO {
+    // Conexión
     private EntityManager em;
 
+    // Constructor
     public UsuarioDAOImpl(EntityManager em) {
         this.em = em;
     }
@@ -33,17 +35,30 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         }
     }
 
+    /**
+     * Método para encontrar un usuario en la bd
+     * @param id identificador del usuario que se quiere encontrar
+     * @return objeto usuario
+     */
     @Override
     public Usuario findById(int id) {
         return em.find(Usuario.class, id);
     }
 
+    /**
+     * Método para listar todos los usuarios contenidos en la bd
+     * @return una lista de usuarios
+     */
     @Override
     public List<Usuario> findAll() {
         List<Usuario> usuarios = em.createQuery("SELECT u FROM Usuario u", Usuario.class).getResultList();
         return usuarios;
     }
 
+    /**
+     * Método para actualizar los datos de un usuario
+     * @param usuario objeto usuario que se desea actualizar
+     */
     @Override
     public void update(Usuario usuario) {
         try{
@@ -57,6 +72,10 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         }
     }
 
+    /**
+     * Método para eliminar un usuario de la bd
+     * @param id identificador del usuario que se desea eliminar
+     */
     @Override
     public void delete(int id) {
         try {

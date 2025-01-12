@@ -27,7 +27,12 @@ public class Venta {
     @JoinColumn(name="cliente_id")
     private Cliente cliente; // relacion many to one con cliente
 
-    @ManyToMany(mappedBy = "ventas", cascade = CascadeType.ALL)
+    @ManyToMany
+    @JoinTable(
+            name = "venta_coche",
+            joinColumns = @JoinColumn(name = "venta_id"),
+            inverseJoinColumns = @JoinColumn(name = "coche_id")
+    )
     private List<Coche> coches = new ArrayList<>();
 
     // Constructor

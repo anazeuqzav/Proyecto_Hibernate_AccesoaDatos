@@ -7,7 +7,6 @@ import org.servicesImpl.*;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import javax.persistence.Query;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.InputMismatchException;
@@ -28,15 +27,12 @@ public class Main {
         ReparacionDAO reparacionDAO = new ReparacionDAOImpl(em);
         VentaDAO ventaDAO = new VentaDAOImpl(em);
 
-
         Scanner sc = new Scanner(System.in);
         String opcion;
 
         do {
             mostrarMenuPrincipal();
-
             opcion = sc.nextLine();
-
             switch (opcion) {
                 // Usuario
                 case "1":
@@ -54,7 +50,6 @@ public class Main {
                                 Usuario usuario = new Usuario(nombre, contrasena);
 
                                 usuarioDAO.save(usuario);
-
                                 break;
 
                             // Buscar Usuario por ID
@@ -768,10 +763,12 @@ public class Main {
 
                                                 if (cocheVendido != null) {
                                                     venta.getCoches().add(cocheVendido);
-                                                    clienteVenta.getCoches().add(cocheVendido);
+                                                    cocheVendido.getVentas().add(venta);
 
-                                                    clienteDAO.update(clienteVenta);
+                                                    clienteVenta.getCoches().add(cocheVendido);
                                                     ventaDAO.save(venta);
+
+
 
                                                 } else {
                                                     System.out.println("Coche no encontrado");
@@ -779,6 +776,7 @@ public class Main {
                                                 System.out.println("¿Quieres añadir otro coche a la venta? (S/N)");
                                                 respuesta = sc.nextLine();
                                             } while (respuesta.equalsIgnoreCase("S"));
+
 
                                         } else {
                                             System.out.println("El empleado no es un vendedor");
@@ -1023,6 +1021,9 @@ public class Main {
         sc.close();
     }
 
+    /**
+     *  Muestra un menú principal con opciones
+     */
     private static void mostrarMenuPrincipal() {
         System.out.println("""
                 \n
@@ -1042,6 +1043,10 @@ public class Main {
                 """);
     }
 
+    /**
+     * Muestra un menú para cada entidad
+     * @param entidad cada entidad en la BBDD
+     */
     private static void mostrarMenuOperaciones(String entidad) {
         System.out.println(String.format("""
                 \n
@@ -1060,6 +1065,9 @@ public class Main {
 
     }
 
+    /**
+     * Muestra un menú con consultas avanzadas
+     */
     private static void mostrarMenuConsultas() {
         System.out.println("""
                 \n
@@ -1074,7 +1082,5 @@ public class Main {
                       5. Salir al menú principal                          
                 ═══════════════════════════════════════════════════════════════════════════════
                 """);
-
     }
-
 }

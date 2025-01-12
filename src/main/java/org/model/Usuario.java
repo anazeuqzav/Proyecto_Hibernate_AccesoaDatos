@@ -16,7 +16,7 @@ public class Usuario {
     @Column(name = "password")
     private String password;
 
-    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "usuario")
     private Empleado empleado;
 
     // Constructor

@@ -24,18 +24,13 @@ public class Coche {
     @Column(name = "precio")
     private double precio;
 
-    @ManyToMany
-    @JoinTable(
-            name = "Venta_Coche",
-            joinColumns = @JoinColumn(name = "coche_id"),
-            inverseJoinColumns = @JoinColumn(name = "venta_id")
-    )
+    @ManyToMany(mappedBy = "coches", cascade = CascadeType.ALL)
     private List<Venta> ventas = new ArrayList<>();
 
     @OneToMany(mappedBy = "coche", cascade = CascadeType.ALL)
     private List<Reparacion> reparaciones = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "coches", cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "coches", cascade = CascadeType.MERGE)
     private List<Cliente> clientes = new ArrayList<>();
 
 
@@ -125,6 +120,7 @@ public class Coche {
                 .append(" | Año: ").append(anio)
                 .append(" | Precio: ").append(precio)
                 .append("\n | Reparaciones: ").append(reparaciones)
+                .append("\n | Ventas: ").append(ventas)
                 .append("\n");
 
         return sb.toString();

@@ -21,7 +21,8 @@ public class Cliente {
     @Column(name = "telefono")
     private String telefono;
 
-    @ManyToMany
+    // Si se elimina un cliente, se eliminan los coches asociados
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "cliente_coche",
             joinColumns = @JoinColumn(name = "cliente_id"),
